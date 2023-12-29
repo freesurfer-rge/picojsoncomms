@@ -12,7 +12,7 @@ class BoardBlink:
     @property
     def blink_secs(self) -> float:
         return 2 * self._half_cycle_secs
-    
+
     @blink_secs.setter
     def blink_secs(self, value: float):
         self._half_cycle_secs = value / 2
@@ -23,13 +23,12 @@ class BoardBlink:
             await asyncio.sleep(self._half_cycle_secs)
 
 
-
 async def main():
     board_blinker = BoardBlink()
 
     while True:
         await asyncio.sleep(10)
-        board_blinker.blink_secs = board_blinker.blink_secs *0.9
+        board_blinker.blink_secs = board_blinker.blink_secs * 0.9
 
 
 asyncio.run(main())
