@@ -30,9 +30,11 @@ async def main():
 
     json_comms = JSONCommunicator()
 
+    it_count = 0
     while True:
         await asyncio.sleep(10)
-        json_comms.send(dict(a=1))
+        await json_comms.send(dict(it_count=it_count))
+        it_count += 1
 
 
 asyncio.run(main())

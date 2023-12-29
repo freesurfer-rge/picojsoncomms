@@ -11,6 +11,7 @@ import aio_queue
 class JSONCommunicator:
     def __init__(self):
         self._incoming = aio_queue.Queue()
+        self._ready = asyncio.Event()
         self._poll_sleep_secs = 0.01
         # Get the board's id as a string
         self._id = binascii.hexlify(machine.unique_id()).decode()
@@ -25,7 +26,8 @@ class JSONCommunicator:
     def poll_sleep_secs(self, value):
         self._poll_sleep_secs = value
 
-    def send(self, obj):
+    async def send(self, obj):
+        await self._ready.wait()
         message = dict(sender_id=self._id, type="user", payload=obj)
         print(json.dumps(message))
 
@@ -67,7 +69,26 @@ class JSONCommunicator:
         if recv_obj["type"] == "user":
             await self._incoming.put(recv_obj["payload"])
         elif recv_obj["type"] == "sys":
-            pass
+            await self._handle_sys(recv_obj["payload"])
         else:
             self.send_log(dict(level="error", message=f"Unrecognised message type: {recv_obj}"))
+
+    async def _handle_sys(self, sys_payload):
+        if "kind" not in sys_payload:
+            self.send_log(dict(level="error", message=f"Missing kind on sys_payload: {json.dumps(sys_payload)}"))
+            return
+        
+        response = None
+        send_ready = False
+        if sys_payload["kind"] == "SYN":
+            response = dict(kind="ACK")
+            send_ready = True
+        else:
+            self.send_log(dict(level="error", message=f"Unknown kind on sys_payload: {json.dumps(sys_payload)}"))
+            return
+        
+        message = dict(sender_id=self._id, type="sys", payload=response)
+        print(json.dumps(message))
+        if send_ready:
+            self._ready.set()
             
