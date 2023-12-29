@@ -4,6 +4,7 @@ import machine
 
 from jsoncommunicator import JSONCommunicator
 
+
 class BoardBlink:
     def __init__(self):
         self._half_cycle_secs = 1.0
