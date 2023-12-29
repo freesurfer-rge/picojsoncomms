@@ -28,7 +28,7 @@ async def main():
 
     while True:
         await asyncio.sleep(10)
-        board_blinker.blink_secs = board_blinker.blink_secs * 0.9
+        board_blinker.blink_secs = board_blinker.blink_secs * 0.5
 
 
 asyncio.run(main())
