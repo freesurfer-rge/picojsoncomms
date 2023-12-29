@@ -2,6 +2,7 @@ import asyncio
 
 import machine
 
+from jsoncommunicator import JSONCommunicator
 
 class BoardBlink:
     def __init__(self):
@@ -26,9 +27,11 @@ class BoardBlink:
 async def main():
     board_blinker = BoardBlink()
 
+    json_comms = JSONCommunicator()
+
     while True:
         await asyncio.sleep(10)
-        board_blinker.blink_secs = board_blinker.blink_secs * 0.5
+        json_comms.send(dict(a=1))
 
 
 asyncio.run(main())
