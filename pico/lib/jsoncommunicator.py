@@ -92,3 +92,9 @@ class JSONCommunicator:
         if send_ready:
             self._ready.set()
             
+
+    @classmethod
+    async def create(cls) ->'JSONCommunicator':
+        comm = JSONCommunicator()
+        await comm._ready.wait()
+        return comm

@@ -28,7 +28,11 @@ class BoardBlink:
 async def main():
     board_blinker = BoardBlink()
 
-    json_comms = JSONCommunicator()
+    # This will wait until a message like
+    # { "type":"sys", "payload":{ "kind":"SYN" } }
+    # is received. The reply will be like:
+    # {"sender_id": "e6614103e76c282e", "type": "sys", "payload": {"kind": "ACK"}}
+    json_comms = await JSONCommunicator.create()
 
     it_count = 0
     while True:
