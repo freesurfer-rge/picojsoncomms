@@ -20,14 +20,12 @@ class JSONCommunicator:
         self._loop = asyncio.get_running_loop()
         self._incoming = asyncio.Queue()
         self._pico_id = None
+        self._thread = None
 
     @property
     def pico_id(self)-> str:
         return self._pico_id
-    
-    @pico_id.setter
-    def pico_id(self, value:str):
-        self._pico_id = value
+
 
     def _tty_reader(self):
         for line in iter(self._tty.readline, None):
@@ -58,3 +56,19 @@ class JSONCommunicator:
             asyncio.run_coroutine_threadsafe(self._incoming.put(incoming_obj["payload"]), self._loop)
         else:
             _logger.error(f"Unsupported message type: {incoming_obj}")
+
+    @classmethod
+    async def create(cls, pico_path: pathlib.Path) -> 'JSONCommunicator':
+        comm = JSONCommunicator(pico_path)
+        syn_msg = dict(type="sys", payload=dict(kind="SYN"))
+        comm._tty.write(json.dumps(syn_msg)+"\n")
+        response = comm._tty.readline()
+        resp_obj = json.loads(response)
+        comm._pico_id = resp_obj["sender_id"]
+        assert resp_obj["type"]=="sys"
+        assert resp_obj["payload"]["kind"] =="ACK"
+
+        comm._thread = threading.Thread(target=comm._tty_reader, args=[comm])
+        comm._thread.start()
+
+        return comm
