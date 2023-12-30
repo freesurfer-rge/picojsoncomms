@@ -6,8 +6,8 @@ from jsoncommunicator import JSONCommunicator
 
 
 class BoardBlink:
-    def __init__(self):
-        self._half_cycle_secs = 1.0
+    def __init__(self, blink_secs: float = 2.0):
+        self._half_cycle_secs = blink_secs / 2
         self._board_led = machine.Pin("LED", machine.Pin.OUT)
         self._task = asyncio.create_task(self._blink_runner())
 
@@ -26,7 +26,7 @@ class BoardBlink:
 
 
 async def main():
-    board_blinker = BoardBlink()
+    board_blinker = BoardBlink(0.5)
 
     # This will wait until a message like
     # { "type":"sys", "payload":{ "kind":"SYN" } }
@@ -34,11 +34,16 @@ async def main():
     # {"sender_id": "e6614103e76c282e", "type": "sys", "payload": {"kind": "ACK"}}
     json_comms = await JSONCommunicator.create()
 
-    it_count = 0
+    board_blinker.blink_secs = 1
+
     while True:
-        await asyncio.sleep(10)
-        await json_comms.send(dict(it_count=it_count))
-        it_count += 1
+        nxt_request = await json_comms.get()
+        if "a" not in nxt_request or "b" not in nxt_request:
+            json_comms.send_log(dict(level="error", message="Keys a and b not present"))
+            continue
+        c = nxt_request["a"] * nxt_request["b"]
+        nxt_request["c"] = c
+        json_comms.send(nxt_request)
 
 
 asyncio.run(main())

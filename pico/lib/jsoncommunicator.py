@@ -35,6 +35,8 @@ class JSONCommunicator:
         message = dict(sender_id=self._id, type="log", payload=obj)
         print(json.dumps(message))
 
+    async def get(self):
+        return await self._incoming.get()
 
     async def _listener(self):
         poller = select.poll()
