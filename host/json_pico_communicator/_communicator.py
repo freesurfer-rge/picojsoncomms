@@ -8,7 +8,7 @@ import queue
 import threading
 import time
 
-_logger = logging.getLogger(__name__)
+_logger = logging.getLogger("JSONCommunicator")
 
 
 class JSONCommunicator:
@@ -54,6 +54,8 @@ class JSONCommunicator:
         
         if incoming_obj["type"] == "user":
             asyncio.run_coroutine_threadsafe(self._incoming.put(incoming_obj["payload"]), self._loop)
+        elif incoming_obj["type"] == "log":
+            _logger.info(f"Received from Pico: {incoming_obj}")
         else:
             _logger.error(f"Unsupported message type: {incoming_obj}")
 
@@ -61,14 +63,16 @@ class JSONCommunicator:
     async def create(cls, pico_path: pathlib.Path) -> 'JSONCommunicator':
         comm = JSONCommunicator(pico_path)
         syn_msg = dict(type="sys", payload=dict(kind="SYN"))
-        comm._tty.write(json.dumps(syn_msg)+"\n")
+        comm._tty.write(json.dumps(syn_msg) + "\n")
         response = comm._tty.readline()
+        _logger.info(f"Response: {response}")
         resp_obj = json.loads(response)
         comm._pico_id = resp_obj["sender_id"]
         assert resp_obj["type"]=="sys"
         assert resp_obj["payload"]["kind"] =="ACK"
+        _logger.info(f"Established communcation with {comm.pico_id}")
 
-        comm._thread = threading.Thread(target=comm._tty_reader, args=[comm])
+        comm._thread = threading.Thread(target=comm._tty_reader)
         comm._thread.start()
 
         return comm

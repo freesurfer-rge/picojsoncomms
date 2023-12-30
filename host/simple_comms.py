@@ -27,7 +27,7 @@ async def main():
     args = parse_args()
     _logger.info(f"pico_device: {args.pico_device}")
 
-    comm = JSONCommunicator.create()
+    comm = await JSONCommunicator.create(args.pico_device)
 
 
 if __name__ == "__main__":
