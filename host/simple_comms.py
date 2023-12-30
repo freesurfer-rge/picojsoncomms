@@ -3,6 +3,8 @@ import asyncio
 import logging
 import pathlib
 
+from json_pico_communicator import JSONCommunicator
+
 _logger = logging.getLogger()
 logging.basicConfig(level=logging.INFO)
 
@@ -24,6 +26,8 @@ def parse_args():
 async def main():
     args = parse_args()
     _logger.info(f"pico_device: {args.pico_device}")
+
+    comm = JSONCommunicator.create()
 
 
 if __name__ == "__main__":
