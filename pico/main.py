@@ -38,12 +38,14 @@ async def main():
 
     while True:
         nxt_request = await json_comms.get()
+        # Should send a message
+        # { "target_id": "e6614103e76c282e", "type": "user", "payload": { "a":2, "b":3 }}
         if "a" not in nxt_request or "b" not in nxt_request:
             json_comms.send_log(dict(level="error", message="Keys a and b not present"))
             continue
         c = nxt_request["a"] * nxt_request["b"]
         nxt_request["c"] = c
-        json_comms.send(nxt_request)
+        await json_comms.send(nxt_request)
 
 
 asyncio.run(main())
