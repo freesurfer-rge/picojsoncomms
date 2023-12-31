@@ -29,8 +29,15 @@ async def main():
 
     comm = await JSONCommunicator.create(args.pico_device)
     _logger.info("Comms established")
-    await asyncio.sleep(10)
-    _logger.info("Proceeding")
+
+    done = False
+    while not done:
+        a = int(input("Enter a: "))
+        b = int(input("Enter b: "))
+        send = dict(a=a, b=b)
+        comm.send(send)
+        resp = await comm.get()
+        print(f"Result: {resp['c']}")
 
 
 if __name__ == "__main__":

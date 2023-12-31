@@ -62,6 +62,15 @@ class JSONCommunicator:
         else:
             _logger.error(f"Unsupported message type: {incoming_obj}")
 
+    async def get(self) -> dict[str, any]:
+        nxt = await self._incoming.get()
+        return nxt
+
+    def send(self, payload: dict[str, any]):
+        message = dict(type='user', target_id=self.pico_id, payload=payload)
+        msg_str = json.dumps(message) + "\n"
+        self._tty.write(msg_str.encode('utf-8'))
+
     @classmethod
     async def create(cls, pico_path: pathlib.Path) -> 'JSONCommunicator':
         comm = JSONCommunicator(pico_path)
@@ -72,8 +81,8 @@ class JSONCommunicator:
         _logger.info(f"Response: {response}")
         resp_obj = json.loads(response)
         comm._pico_id = resp_obj["sender_id"]
-        #assert resp_obj["type"]=="sys"
-        #assert resp_obj["payload"]["kind"] =="ACK"
+        assert resp_obj["type"]=="sys"
+        assert resp_obj["payload"]["kind"] =="ACK"
         _logger.info(f"Established communcation with {comm.pico_id}")
 
         comm._thread = threading.Thread(target=comm._tty_reader)

@@ -56,8 +56,7 @@ class JSONCommunicator:
                     )
                 else:
                     json_line = sys.stdin.readline().strip()
-                    self.send_log(dict(level="info", message=f"PICO GOT: --{json_line}--"))
-                    #print(f"PICO GOT: ---{json_line}---")
+                    # self.send_log(dict(level="info", message=f"PICO GOT: --{json_line}--"))
                     try:
                         recv_obj = json.loads(json_line)
                         await self._handle_received(recv_obj)
