@@ -28,6 +28,9 @@ async def main():
     _logger.info(f"pico_device: {args.pico_device}")
 
     comm = await JSONCommunicator.create(args.pico_device)
+    _logger.info("Comms established")
+    await asyncio.sleep(10)
+    _logger.info("Proceeding")
 
 
 if __name__ == "__main__":

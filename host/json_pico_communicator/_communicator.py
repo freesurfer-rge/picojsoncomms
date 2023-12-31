@@ -8,15 +8,18 @@ import queue
 import threading
 import time
 
+import serial
+
 _logger = logging.getLogger("JSONCommunicator")
 
 
 class JSONCommunicator:
     def __init__(self, pico_path: pathlib.Path):
-        self._tty = io.TextIOWrapper(
-            io.FileIO(os.open(pico_path, os.O_NOCTTY | os.O_RDWR), "r+"),
-            line_buffering=True,
-        )
+        # self._tty = io.TextIOWrapper(
+        #    io.FileIO(os.open(pico_path, os.O_NOCTTY | os.O_RDWR), "r+"),
+        #    line_buffering=True,
+        #)
+        self._tty = serial.Serial(str(pico_path))
         self._loop = asyncio.get_running_loop()
         self._incoming = asyncio.Queue()
         self._pico_id = None
@@ -55,7 +58,7 @@ class JSONCommunicator:
         if incoming_obj["type"] == "user":
             asyncio.run_coroutine_threadsafe(self._incoming.put(incoming_obj["payload"]), self._loop)
         elif incoming_obj["type"] == "log":
-            _logger.info(f"Received from Pico: {incoming_obj}")
+            _logger.info(f"Log from Pico: {incoming_obj}")
         else:
             _logger.error(f"Unsupported message type: {incoming_obj}")
 
@@ -63,13 +66,14 @@ class JSONCommunicator:
     async def create(cls, pico_path: pathlib.Path) -> 'JSONCommunicator':
         comm = JSONCommunicator(pico_path)
         syn_msg = dict(type="sys", payload=dict(kind="SYN"))
-        comm._tty.write(json.dumps(syn_msg) + "\n")
-        response = comm._tty.readline()
+        syn_str = json.dumps(syn_msg) + "\n"
+        comm._tty.write(syn_str.encode('utf-8'))
+        response = comm._tty.readline().strip()
         _logger.info(f"Response: {response}")
         resp_obj = json.loads(response)
         comm._pico_id = resp_obj["sender_id"]
-        assert resp_obj["type"]=="sys"
-        assert resp_obj["payload"]["kind"] =="ACK"
+        #assert resp_obj["type"]=="sys"
+        #assert resp_obj["payload"]["kind"] =="ACK"
         _logger.info(f"Established communcation with {comm.pico_id}")
 
         comm._thread = threading.Thread(target=comm._tty_reader)

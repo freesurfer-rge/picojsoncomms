@@ -33,11 +33,14 @@ async def main():
     # is received. The reply will be like:
     # {"sender_id": "e6614103e76c282e", "type": "sys", "payload": {"kind": "ACK"}}
     json_comms = await JSONCommunicator.create()
+    json_comms.send_log(dict(level="info", message="json_comms created"))
 
     board_blinker.blink_secs = 1
 
     while True:
+        json_comms.send_log(dict(level="info", message="Start of main loop"))
         nxt_request = await json_comms.get()
+        json_comms.send_log(dict(level="info", message=f"Main loop got: --{nxt_request}--"))
         # Should send a message
         # { "target_id": "e6614103e76c282e", "type": "user", "payload": { "a":2, "b":3 }}
         if "a" not in nxt_request or "b" not in nxt_request:

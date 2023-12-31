@@ -55,7 +55,9 @@ class JSONCommunicator:
                         )
                     )
                 else:
-                    json_line = poll_tuple[0].readline()
+                    json_line = sys.stdin.readline().strip()
+                    self.send_log(dict(level="info", message=f"PICO GOT: --{json_line}--"))
+                    #print(f"PICO GOT: ---{json_line}---")
                     try:
                         recv_obj = json.loads(json_line)
                         await self._handle_received(recv_obj)
